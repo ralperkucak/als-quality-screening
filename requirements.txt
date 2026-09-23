@@ -1,0 +1,19 @@
+# Core numerical / ML stack.
+numpy>=2.0
+pandas>=2.2
+pyarrow>=16          # parquet backend for pandas
+scipy>=1.13
+scikit-learn>=1.5
+matplotlib>=3.9
+torch>=2.8
+pyyaml>=6.0
+
+# Point-cloud I/O for the FRACTAL LAZ archives.
+laspy>=2.5
+lazrs>=0.6            # LAZ compression backend used by laspy
+
+# FRACTAL download.
+requests>=2.32
+
+# The exact versions used to produce the results in the paper (Python 3.11,
+# CUDA 12.8) are pinned in requirements-lock.txt.

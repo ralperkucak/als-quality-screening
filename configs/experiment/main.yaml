@@ -1,0 +1,129 @@
+# Frozen configuration of the main experiment. Every number that controls an
+# experiment lives here; nothing is tuned against the target test split.
+seed_base: 20260819
+sampling:
+  num_points: 12288
+  k_neighbours: 16
+  sub_ratio: 4
+  num_layers: 4
+  coord_scale_m: 25.0
+  geometry_only: false
+splits:
+  # The full training split was ingested, so the candidate pool is a contiguous
+  # block at the native acquisition density rather than a thinned sample. Every
+  # domain can supply these counts, so all five folds are identical in size.
+  n_source_train_per_domain: 1500
+  n_source_val_per_domain: 300
+  n_target_pool: 3000
+  n_target_test: 800
+  pool_block: median
+  seed: 20260819
+model:
+  num_classes: 7
+  in_features: 8
+  num_layers: 4
+  d_out: [16, 64, 128, 256]
+  dropout: 0.5
+source_training:
+  epochs: 50
+  batch_size: 8
+  lr: 0.004
+  weight_decay: 0.0
+  num_workers: 16
+  grad_clip: 5.0
+  amp: true
+  lr_patience: 4
+  lr_factor: 0.5
+  min_lr: 1.0e-5
+  class_weighting: sqrt_inv_freq
+adaptation:
+  # A fixed optimisation budget per round, so every acquisition method and every
+  # budget level receives the same amount of adaptation compute.
+  steps_per_target_patch: 12
+  min_steps: 200
+  max_steps: 600
+  batch_size: 8
+  lr: 0.0005
+  # Measured, not assumed. A 2:1 source-to-target mixture pulled the model back
+  # to the source optimum and suppressed adaptation: on the fold with the
+  # largest gap, 64 labelled patches gained 1.9 points at 2:1 and 7.2 at 0.5:1.
+  # See outputs/metrics/adaptation_diagnosis.json and decision log D19.
+  replay_ratio: 0.5
+  finetune_mode: full
+  warm_start: true
+  num_workers: 16
+  eval_workers: 16
+  eval_batch_size: 8
+replay:
+  # Source patches available for replay during adaptation. Fixed per fold and
+  # identical for every acquisition method and seed.
+  pool_size: 1500
+active_learning:
+  budgets_patches: [4, 8, 16, 32, 64, 128]
+  seeds: [0, 1, 2]
+  shortlist_kappa: 20
+  shortlist_min: 400
+  lambda_novelty: 0.5
+  tau: 1.0
+  entropy_top_q: 0.1
+  variogram:
+    model: spherical
+    field: posterior
+    # The candidate block is about 28 km across, so lags out to 12 km are well
+    # supported (roughly two fifths of the window) and the longest dependence
+    # ranges measured on the label-side field, about 8 km in D2 and D5, stay
+    # inside the observation window instead of being rejected as implausible.
+    max_lag_m: 12000.0
+    n_bins: 30
+    max_pairs: 2000000
+    min_structured_share: 0.05
+    fallback_quantile: 0.25
+  relaxation:
+    factor: 0.75
+    max_relaxations: 8
+methods:
+  - {key: random}
+  - {key: entropy}
+  - {key: margin}
+  - {key: coreset}
+  - {key: geo_fps}
+  - {key: unc_div, lam: 0.5}
+  - {key: fixed_radius, radius_m: 500.0, lam: 0.5}
+  - {key: redal}                                            # ported, Wu et al. 2021
+  - {key: annotator}                                        # ported, Xie et al. 2023
+  - {key: geoquery, lam: 0.5, tau: 1.0}
+
+# Component ablation. Entropy alone (U), CoreSet (D) and geographic farthest
+# point (geography only) are already in the main list and are reused here.
+ablation_methods:
+  - {key: fixed_radius, radius_m: 500.0, lam: 0.0}          # U + fixed radius
+  - {key: geoquery, lam: 0.0, tau: 1.0}                     # U + adaptive radius
+  - {key: geoquery, lam: 0.5, tau: 0.5}                     # weaker constraint
+  - {key: geoquery, lam: 0.5, tau: 1.5}                     # stronger constraint
+  - {key: geoquery, lam: 0.5, tau: 1.0, score_key: entropy_topq}
+  - {key: geoquery, lam: 0.5, tau: 1.0, field_key: entropy}
+  - {key: geoquery, lam: 0.5, tau: 1.0, model: exponential}
+
+# Sensitivity of the fixed-radius baseline to its hyperparameter. This is the
+# comparison the central claim rests on: a fixed radius has to be chosen, and no
+# single choice suits every region.
+radius_sweep_methods:
+  - {key: fixed_radius, radius_m: 250.0, lam: 0.5}
+  - {key: fixed_radius, radius_m: 1000.0, lam: 0.5}
+  - {key: fixed_radius, radius_m: 2000.0, lam: 0.5}
+  - {key: fixed_radius, radius_m: 4000.0, lam: 0.5}
+
+# Robustness subset used for the geometry-only and protocol-variation runs.
+robustness_methods:
+  - {key: random}
+  - {key: entropy}
+  - {key: unc_div, lam: 0.5}
+  - {key: geoquery, lam: 0.5, tau: 1.0}
+
+# Methods carried through the candidate-density response. The contrast that
+# matters is the proposed method against the same method without the geographic
+# constraint, with entropy as the reference point.
+density_methods:
+  - {key: entropy}
+  - {key: unc_div, lam: 0.5}
+  - {key: geoquery, lam: 0.5, tau: 1.0}
