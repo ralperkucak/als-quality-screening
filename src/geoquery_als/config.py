@@ -13,7 +13,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 # Bulk data lives outside the repository (large, immutable, git-ignored).
 # Override with the GEOQUERY_DATA_ROOT environment variable.
-DATA_ROOT = Path(os.environ.get("GEOQUERY_DATA_ROOT", r"C:/geoquery_store"))
+DATA_ROOT = Path(os.environ.get("GEOQUERY_DATA_ROOT", Path.home() / "geoquery_store"))
 
 RAW_DIR = DATA_ROOT / "raw"
 INTERIM_DIR = DATA_ROOT / "interim"
