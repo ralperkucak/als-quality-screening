@@ -37,7 +37,7 @@ used to produce the results in the paper, for readers who want to match the
 environment exactly rather than the loosened bounds in `requirements.txt`.
 
 Bulk data is kept outside the repository. By default it is written to
-`C:/geoquery_store`; set `GEOQUERY_DATA_ROOT` to change that:
+`~/geoquery_store`; set `GEOQUERY_DATA_ROOT` to change that:
 
 ```bash
 export GEOQUERY_DATA_ROOT=/path/to/data
@@ -80,7 +80,8 @@ python scripts/04_build_domain_splits.py   # builds the leave-one-region-out rol
 **2. Training.** One call per fold and per backbone; `--backbone` selects
 `randlanet`, `point_transformer`, or a seed variant such as `randlanet_s2`
 (same architecture, different initialisation, used for the seed-sensitivity
-check).
+check; `scripts/rs/run_seeds_more.sh` trains the further initializations and
+recomputes their statistics).
 
 ```bash
 python scripts/07_train_source_lodo.py --backbone randlanet
@@ -107,14 +108,10 @@ bash scripts/rs/run_analysis.sh
 
 Results are written to `outputs/rs/*.csv`, `*.json` and `*.parquet`.
 
-**5. Manuscript tables and figures.** `scripts/rs/10-13`, `20-21`, `29-30`,
-`40`, `52`, `90-91` format the outputs above into the paper's LaTeX tables,
-figures and layout, and `scripts/rs/run_all.sh` chains them together with a
-final PDF build. That script expects the paper's own LaTeX source
-(`manuscript_rs/`, with its section prose already written) alongside this
-repository; that source is not part of this code release, so these scripts
-are included for transparency about how each reported number became a table
-cell or a figure panel rather than as a standalone entry point.
+**5. Figures and tables.** `scripts/rs/10-13`, `15`, `20-21`, `52` and `64`
+write the figures and LaTeX tables of the paper from the outputs above, and
+`scripts/rs/run_all.sh` runs the analysis followed by these scripts. Output goes
+to `manuscript_rs/figures` and `manuscript_rs/tables`.
 
 ## What this repository does not include
 
