@@ -129,7 +129,7 @@ def folds_to_frame(folds: list[FoldSpec]) -> pd.DataFrame:
 
 
 def check_leakage(folds: list[FoldSpec], index: pd.DataFrame) -> dict:
-    """Every assertion a reviewer would want to see verified."""
+    """Check that the splits satisfy every rule of the protocol."""
     xy = index.set_index("patch_id")[["centroid_x", "centroid_y"]]
     report: dict = {"folds": {}, "passed": True}
     for f in folds:
