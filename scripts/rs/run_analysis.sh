@@ -6,12 +6,8 @@
 # the parquet and npz files written by scripts/pivot/02-05 (see the top-level
 # README) and writes CSV, JSON and parquet summaries to outputs/rs/.
 #
-# This does not rebuild the manuscript's tables, figures or PDF. That layer
-# (scripts/rs/1x, 2x, 40, 52, 90, 91) formats these same numbers into the
-# paper's LaTeX source, which is not part of this repository; it is kept here
-# for transparency about how each reported number became a table cell or a
-# figure panel, and it is the reason those scripts import a `manuscript_rs`
-# path that this checkout does not contain.
+# Figures and LaTeX tables are written by scripts/rs/1x, 20, 21, 52 and 64;
+# see the README.
 set -eu
 cd "$(dirname "$0")/../.."
 PY="${PYTHON:-python3}"
@@ -32,9 +28,19 @@ $PY scripts/rs/53_conventions.py
 $PY scripts/rs/54_extra_baselines.py
 $PY scripts/rs/55_target_calibration.py
 $PY scripts/rs/56_support_sensitivity.py
+$PY scripts/rs/67_criterion_support.py
+
+echo "== point thinning, patch subsets, supervised learning curves, operational checks =="
+$PY scripts/rs/60_support_perturbation.py
+$PY scripts/rs/61_baseline_learning_curve.py
+$PY scripts/rs/62_operational_checks.py
+$PY scripts/rs/63_baseline_features.py
+$PY scripts/rs/65_baseline_table_rows.py
 
 echo "== second encoder and seed sensitivity (skipped if their inputs are not cached) =="
 $PY scripts/rs/51_backbone_compare.py || echo "   second encoder not cached, skipping"
 $PY scripts/rs/57_seed_compare.py || echo "   extra seeds not cached, skipping"
+$PY scripts/rs/66_seed_ensemble.py || echo "   extra seeds not cached, skipping"
+$PY scripts/rs/68_baseline_seeds.py || echo "   extra seeds not cached, skipping"
 
 echo "== done: see outputs/rs/*.csv, *.json, *.parquet =="

@@ -7,6 +7,8 @@ them and when it is weighted the other way.
 """
 from __future__ import annotations
 
+import os
+
 import sys
 from pathlib import Path
 
@@ -21,10 +23,10 @@ from geoquery_als.rs.style import (COL_WIDE, apply_style,  # noqa: E402
                                    despine, panel, save)
 
 DATA = ROOT / "outputs" / "rs"
-FIG = ROOT / "manuscript_rs" / "figures"
+FIG = Path(os.environ.get("RS_FIGDIR", ROOT / "manuscript_rs" / "figures"))
 
 ENCODER = [("randlanet", "RandLA-Net", "#1f6fb4"),
-           ("point_transformer", "Point Transformer", "#cf5a31")]
+           ("point_transformer", "Vector attention", "#cf5a31")]
 
 
 def main() -> int:
@@ -66,7 +68,8 @@ def main() -> int:
                 ("point_weighted", "overall accuracy\n" r"($\beta=1$)")]
     offset = {"randlanet": -0.115, "point_transformer": 0.115}
     for key, label, colour in ENCODER:
-        row = summary.loc[label]
+        row = summary.loc[{"randlanet": "RandLA-Net",
+                           "point_transformer": "Point Transformer"}[key]]
         for j, (name, _) in enumerate(criteria):
             x = j + offset[key]
             hi = float(row[f"lift_{name}"])
@@ -77,9 +80,9 @@ def main() -> int:
             bx.scatter([x], [lo], s=30, facecolor="white", edgecolor=colour,
                        linewidth=1.0, zorder=4)
             bx.annotate(f"{hi:.2f}", (x, hi), textcoords="offset points",
-                        xytext=(0, 6), ha="center", fontsize=7, color=colour)
+                        xytext=(0, 6), ha="center", fontsize=8, color=colour)
             bx.annotate(f"{lo:.2f}", (x, lo), textcoords="offset points",
-                        xytext=(0, -11), ha="center", fontsize=7, color=colour)
+                        xytext=(0, -12), ha="center", fontsize=8, color=colour)
     bx.axhline(0.0, color="#9aa3ad", lw=0.8, zorder=1)
     bx.set_xticks(range(len(criteria)))
     bx.set_xticklabels([c[1] for c in criteria])

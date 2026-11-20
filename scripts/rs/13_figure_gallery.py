@@ -1,4 +1,4 @@
-"""What a flagged tile looks like to the reviewer who opens it.
+"""What a flagged tile looks like to the operator who opens it.
 
 Four tiles of one region, one for each outcome of the screening, each shown as
 the reference labelling of its largest patch and as the points where the
@@ -7,6 +7,8 @@ the outcome they receive under the score reported in the paper, so the panels
 show the procedure working and failing on the same terms.
 """
 from __future__ import annotations
+
+import os
 
 import sys
 from pathlib import Path
@@ -24,7 +26,7 @@ from geoquery_als.rs.store import BASE, CLASS_NAMES, FOLDS, load_units  # noqa: 
 from geoquery_als.rs.style import (CLASS_COLOUR, CLASS_LABEL,  # noqa: E402
                                    COL_WIDE, INK, apply_style, panel, save)
 
-FIG = ROOT / "manuscript_rs" / "figures"
+FIG = Path(os.environ.get("RS_FIGDIR", ROOT / "manuscript_rs" / "figures"))
 CLOUDS = BASE / "pointclouds"
 REGION = "D4"
 BUDGET = 0.20

@@ -2,6 +2,8 @@
 and what each control leaves of the screening."""
 from __future__ import annotations
 
+import os
+
 import sys
 from pathlib import Path
 
@@ -19,7 +21,7 @@ from geoquery_als.rs.style import (COL_WIDE, DOMAIN_COLOUR,  # noqa: E402
                                    save)
 
 DATA = ROOT / "outputs" / "rs"
-FIG = ROOT / "manuscript_rs" / "figures"
+FIG = Path(os.environ.get("RS_FIGDIR", ROOT / "manuscript_rs" / "figures"))
 STATISTIC = "calibrated"
 FOLDS = ("D1", "D2", "D3", "D4", "D5")
 
@@ -56,21 +58,36 @@ def main() -> int:
     ax.plot([-0.5, 1.5], [-0.5, 1.5], color="white", lw=1.5, ls=(0, (3, 2)))
     ax.plot([-0.5, 1.5], [-0.5, 1.5], color="#15181c", lw=0.8, ls=(0, (3, 2)),
             label=r"$\alpha=\beta$")
-    for (b, a) in ((0.0, 0.0), (0.0, 1.0), (1.0, 0.0), (1.0, 1.0)):
+    for (b, a, matched) in ((0.0, 0.0, True), (1.0, 1.0, True),
+                            (0.0, 1.0, False), (1.0, 0.0, False)):
         i = int(np.argmin(np.abs(alphas - a)))
         j = int(np.argmin(np.abs(betas - b)))
         value = grid.to_numpy()[i, j]
-        ax.plot(b, a, "o", ms=5.0, mfc="none", mec="white", mew=1.6)
-        ax.plot(b, a, "o", ms=5.0, mfc="none", mec="#15181c", mew=0.7)
-        ax.annotate(f"{value:.2f}", xy=(b, a), xytext=(6, 5),
-                    textcoords="offset points", fontsize=6.4, color="white",
-                    path_effects=[withStroke(linewidth=1.5,
+        if matched:
+            ax.plot(b, a, "*", ms=13.0, mfc="white", mec="#15181c", mew=0.9,
+                    zorder=6)
+        else:
+            ax.plot(b, a, "X", ms=7.0, mfc="#f2f2f2", mec="#15181c", mew=0.7,
+                    zorder=6)
+        ax.annotate(f"{value:.2f}", xy=(b, a), xytext=(7, 5),
+                    textcoords="offset points", fontsize=7.6, color="white",
+                    fontweight="bold",
+                    path_effects=[withStroke(linewidth=1.8,
                                              foreground="#15181c")])
+    halo = [withStroke(linewidth=1.6, foreground="#15181c")]
+    ax.annotate(r"class-averaged, $\alpha=\beta=0$", xy=(0.0, 0.0),
+                xytext=(-0.45, -0.80), fontsize=6.8, color="white",
+                path_effects=halo,
+                arrowprops=dict(arrowstyle="-", color="white", lw=0.7))
+    ax.annotate(r"point-weighted, $\alpha=\beta=1$", xy=(1.0, 1.0),
+                xytext=(-0.42, 1.55), fontsize=6.8, color="white",
+                path_effects=halo,
+                arrowprops=dict(arrowstyle="-", color="white", lw=0.7))
     ax.set_xlim(-0.5, 1.5)
     ax.set_ylim(-1.0, 2.0)
     ax.set_xlabel(r"Criterion class weighting $\beta$")
     ax.set_ylabel(r"Score class weighting $\alpha$")
-    ax.legend(loc="upper left", fontsize=6.4, labelcolor="white")
+    ax.legend(loc="upper left", fontsize=6.6, labelcolor="white")
     bar = fig.colorbar(mesh, ax=ax, pad=0.02, fraction=0.042, aspect=22)
     bar.set_label("Screening lift at a 20% budget", fontsize=6.8)
     bar.ax.tick_params(labelsize=6.5)
@@ -94,7 +111,7 @@ def main() -> int:
     ax.text(0.03, 0.96,
             rf"$\rho={summary['monotone_rho']:.2f}$ "
             rf"[{summary['monotone_lo']:.2f}, {summary['monotone_hi']:.2f}]",
-            transform=ax.transAxes, fontsize=6.6, va="top")
+            transform=ax.transAxes, fontsize=7.4, va="top")
     ax.legend(fontsize=6.0, loc="lower right", handlelength=1.2,
               handletextpad=0.4)
     panel(ax, "b", dx=-0.20, dy=1.02)
@@ -120,7 +137,7 @@ def main() -> int:
                     color=colour[criterion], label=criterion)
     ax.axvline(0.0, color="#8a8f94", lw=0.7)
     ax.set_yticks(np.arange(len(order)))
-    ax.set_yticklabels([label[o] for o in order], fontsize=6.6)
+    ax.set_yticklabels([label[o] for o in order], fontsize=7.4)
     ax.invert_yaxis()
     ax.set_xlabel("Screening lift")
     ax.set_xlim(-0.25, 1.05)

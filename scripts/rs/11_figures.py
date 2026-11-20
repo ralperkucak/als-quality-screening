@@ -1,6 +1,8 @@
 """Figures for the regional distributions, the review budget and the per-class result."""
 from __future__ import annotations
 
+import os
+
 import sys
 from pathlib import Path
 
@@ -21,7 +23,7 @@ from geoquery_als.rs.style import (CLASS_COLOUR, CLASS_LABEL,  # noqa: E402
                                    save)
 
 DATA = ROOT / "outputs" / "rs"
-FIG = ROOT / "manuscript_rs" / "figures"
+FIG = Path(os.environ.get("RS_FIGDIR", ROOT / "manuscript_rs" / "figures"))
 BUDGET = 0.20
 COVERAGE = np.round(np.arange(0.05, 0.501, 0.0125), 4)
 FAMILIES = {"class averaged": ("calibrated", 0.0),
@@ -123,13 +125,13 @@ def figure_per_class():
                         fontsize=7, color="#8a8f94")
                 continue
             ax.text(j + 0.5, i + 0.36, f"{a:.2f}", ha="center", va="center",
-                    fontsize=6.4, color="white" if a < 0.82 else "#15181c")
+                    fontsize=7.6, color="white" if a < 0.82 else "#15181c")
             ax.text(j + 0.5, i + 0.68, f"({b:.2f})", ha="center", va="center",
-                    fontsize=5.6, color="#dfe4e8" if a < 0.82 else "#3a4047")
+                    fontsize=6.6, color="#dfe4e8" if a < 0.82 else "#3a4047")
     ax.set_xticks(np.arange(len(own.columns)) + 0.5)
-    ax.set_xticklabels(own.columns, fontsize=7)
+    ax.set_xticklabels(own.columns, fontsize=7.8)
     ax.set_yticks(np.arange(len(order)) + 0.5)
-    ax.set_yticklabels([CLASS_LABEL[c] for c in order], fontsize=7)
+    ax.set_yticklabels([CLASS_LABEL[c] for c in order], fontsize=7.8)
     ax.invert_yaxis()
     bar = fig.colorbar(mesh, ax=ax, pad=0.02, fraction=0.045, aspect=20)
     bar.set_label("Rank correlation, own-class confidence", fontsize=6.8)
@@ -161,7 +163,7 @@ def figure_decomposition(units):
         ax.text(1.02, i, f"{int(r['tiles_present'])}", fontsize=6.2,
                 va="center", transform=ax.get_yaxis_transform())
     ax.set_yticks(np.arange(len(order)))
-    ax.set_yticklabels([CLASS_LABEL[c] for c in order], fontsize=7)
+    ax.set_yticklabels([CLASS_LABEL[c] for c in order], fontsize=7.8)
     ax.invert_yaxis()
     ax.set_xlim(0, 1)
     ax.set_xlabel(f"Intersection over union in {region}")

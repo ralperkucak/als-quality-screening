@@ -1,6 +1,6 @@
 """Stronger label-free baselines than a mean of confidences.
 
-A reviewer is right to ask whether the class weighting result survives against
+This script checks whether the class weighting result survives against
 orderings that are harder to beat than a pooled average. Three families are
 added here. The first reads the lower tail of the confidence distribution
 inside a tile rather than its centre, which is the usual way a pooled statistic
